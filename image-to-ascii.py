@@ -18,13 +18,15 @@ def main():
     parser.add_argument("-o","--out", help = "Output file location.", default="", required = True, type = str)
     parser.add_argument("-x","--x_px", help = "The x-axis pixel size for each chunk ", default="32", required = False, type = int)
     parser.add_argument("-y","--y_px", help = "The y-axis pixel size for each chunk ", default="32", required = False, type = int)
+    parser.add_argument("-c","--cont", help = "The image contrast. options are \"low\", \"med\", and \"high\"", default="med", choices = ["low","med","high"] ,required = False, type = str)
     args = parser.parse_args()
 
     #set variables to corresponding argument values
     img_loc = args.img #the location of the input image
     out_loc = args.out #the location of the output file
     x_px = args.x_px #the x-axis pixel size for each chunk 
-    y_px = args.y_px #the y-axis pixel size for each chunk 
+    y_px = args.y_px #the y-axis pixel size for each chunk
+    contrast =  args.cont
 
     #load image and convert it to grayscale
     img = Image.open(img_loc) # open image as img
@@ -38,28 +40,54 @@ def main():
 
             img_chunk = np_img[x:(x+x_px),y:(y+y_px)] #create chunk from imput image
             color_avg = 255 - np.average(img_chunk) #average brightness of the chunk
-            ascii_char = get_ascii(color_avg) #create ascii character from average brightness
+            ascii_char = get_ascii(color_avg,contrast) #create ascii character from average brightness
             ascii_arr[int(x/x_px), int(y/y_px)] = ascii_char #assign character to location in output array
 
     np.savetxt(X = ascii_arr, fname = out_loc, fmt = "%s") #save to file location 
     print("ASCII image saved to:", os.path.abspath(out_loc))
 
 #convert sections to ascii characters with same average
-def get_ascii(color_avg):
-    if color_avg >= 230:
-        return "$"
-    elif color_avg >= 200:
-        return "A"
-    elif color_avg >= 180:
-        return "V"
-    elif color_avg >= 150:
-        return "0"
-    elif color_avg >= 100:
-        return "$" 
-    elif color_avg >= 50:
-        return "I" 
-    elif color_avg >= 25:
-        return "1"      
-    else:
-        return "-"
+def get_ascii(color_avg,contrast):
+
+    if contrast == "low":
+        if color_avg >= 230:
+            return "$"
+        elif color_avg >= 200:
+            return "A"
+        elif color_avg >= 180:
+            return "V"
+        elif color_avg >= 150:
+            return "0"
+        elif color_avg >= 100:
+            return "$" 
+        elif color_avg >= 50:
+            return "I" 
+        elif color_avg >= 25:
+            return "1"      
+        else:
+            return "-"
+
+    elif contrast == "med":
+        if color_avg >= 200:
+            return "$"
+        elif color_avg >= 180:
+            return "V"
+        elif color_avg >= 120:
+            return "0"
+        elif color_avg >= 80:
+            return "$" 
+        elif color_avg >= 50:
+            return "I" 
+        elif color_avg >= 25:
+            return "1"      
+        else:
+            return "-"
+
+    elif contrast == "high":
+        if color_avg >= 180:
+            return "$"
+        elif color_avg >= 120:
+            return "A"      
+        else:
+            return "-"
 main()
